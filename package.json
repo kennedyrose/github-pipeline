@@ -1,0 +1,12 @@
+{
+  "name": "github-pipeline",
+  "version": "0.0.0",
+  "description": "A CLI for multiple environments with Github Pages",
+  "main": "index.js",
+  "repository": "https://github.com/kennedyrose/github-pipeline.git",
+  "author": "Kennedy Rose <kennedy@kennedyrose.com>",
+  "license": "MIT",
+  "dependencies": {
+    "meow": "^3.7.0"
+  }
+}
