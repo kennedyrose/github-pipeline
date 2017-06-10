@@ -1,6 +1,8 @@
 'use strict'
 const fs = require('fs-extra')
-const exec = require('child_process').exec
+const childProcess = require('child_process')
+const exec = childProcess.exec
+const spawn = childProcess.spawn
 
 // Add a remote
 exports.add = (input, opt) => {
@@ -47,17 +49,19 @@ exports.list = exports.ls = () => {
 exports.push = input => {
 	let remote = input[1]
 	getPackage()
-		.then(obj => execPromiseSilent(`git remote add ghp-${remote} "${obj.pipeline[remote]}"`))
-		.then(() => execPromise(`git fetch ${remote}`))
-		.then(() => execPromise(`git checkout --track -b ghp-${remote} ${remote}/master`))
-		.then(() => execPromise(`git merge master --squash --allow-unrelated-histories -Xtheirs`))
-		.then(() => execPromise(`git reset HEAD CNAME`))
-		.then(() => execPromise(`git reset HEAD docs/CNAME`))
-		.then(() => execPromise(`git commit -m 'Github Pipeline deploy'`))
-		.then(() => execPromise(`git push ${remote} +ghp-${remote}:master`))
-		.then(() => execPromise(`git checkout master`))
-		.then(() => execPromise(`git branch -D ghp-${remote}`))
-		.catch(console.error)
+		.then(obj => execPromiseSilent(`git remote add ghp-remote-${remote} "${obj.pipeline[remote]}"`))
+		.then(() => execPromiseSilent(`git fetch ghp-remote-${remote}`))
+		.then(() => execPromiseSilent(`git checkout --track -b ghp-branch-${remote} ghp-remote-${remote}/master`))
+		.then(() => execPromiseSilent(`git merge master --squash --allow-unrelated-histories -Xtheirs`))
+		.then(() => execPromiseSilent(`git reset HEAD CNAME`))
+		.then(() => execPromiseSilent(`git reset HEAD docs/CNAME`))
+		.then(() => execPromiseSilent(`git commit -m 'Github Pipeline deploy'`))
+		.then(() => execPromiseSilent(`git push ghp-remote-${remote} +ghp-branch-${remote}:master`))
+		.then(() => execPromiseSilent(`git checkout master`))
+		.then(() => execPromiseSilent(`git branch -D ghp-branch-${remote}`))
+		.catch(err => {
+			console.log('ERROR: ' + err)
+		})
 }
 
 // Rolls back remote to previous commit
