@@ -18,7 +18,11 @@ exports.add = (input, opt) => {
 exports.remove = exports.rm = (input, opt) => {
 	getPackage()
 		.then(obj => {
-			if(obj.pipeline) delete obj.pipeline[input[1]]
+			if(obj.pipeline){
+				for(let i = 1; (i - 1) <= input.length; i++){
+					delete obj.pipeline[input[i]]
+				}
+			}
 			if(!Object.keys(obj.pipeline).length) delete obj.pipeline
 			return obj
 		})
@@ -38,7 +42,9 @@ exports.list = exports.ls = () => {
 				return arr.join('\n')
 			}
 		})
-		.then(console.log)
+		.then(list => {
+			if(list) console.log(list)
+		})
 		.catch(console.error)
 }
 
