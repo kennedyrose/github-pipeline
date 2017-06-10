@@ -43,13 +43,6 @@ exports.list = exports.ls = () => {
 		.catch(console.error)
 }
 
-
-// create branch for remote if doesn't exist
-// pull remote to branch
-// commit new work to branch
-// push
-// git update-index --assume-unchanged CNAME
-
 // Pushes latest commit to remote
 exports.push = input => {
 	let remote
