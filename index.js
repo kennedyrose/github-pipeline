@@ -1,6 +1,6 @@
 'use strict'
-const exec = require('child_process').exec
 const fs = require('fs-extra')
+const exec = require('child_process').exec
 
 // Add a remote
 exports.add = (input, opt) => {
@@ -43,12 +43,34 @@ exports.list = exports.ls = () => {
 		.catch(console.error)
 }
 
-exports.push = () => {
-
+// Pushes latest commit to remote
+exports.push = input => {
+	let remote
+	getPackage()
+		.then(obj => {
+			remote = obj.pipeline[input[1]]
+			return execPromise('git rev-parse HEAD')
+		})
+		.then(commitId => {
+			commitId = commitId.trim()
+			return execPromise(`git push ${remote} ${commitId}:refs/heads/master --force`)
+		})
+		.then(console.log)
+		.catch(console.error)
 }
 
 exports.rollback = () => {
 
+}
+
+function execPromise(str){
+	return new Promise((resolve, reject) => {
+		exec(str, (err, stdout, stderr) => {
+			if(err) return reject(err)
+			if(stderr) return reject(stderr)
+			resolve(stdout)
+		})
+	})
 }
 
 function getPackage(){

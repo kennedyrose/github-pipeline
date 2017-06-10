@@ -10,7 +10,7 @@ const cli = meow(`
 	  push      Pushes to provided repo
 	  rollback  Rolls back to commit ID
 	  ls        Lists all pipeline URLs
-
+ 
 `, {
 	alias: {}
 })
