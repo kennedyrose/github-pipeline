@@ -47,19 +47,16 @@ exports.list = exports.ls = () => {
 exports.push = input => {
 	let remote = input[1]
 	getPackage()
-		.then(obj => {
-			return execPromise(`git remote add ${remote} "${obj.pipeline[remoteName]}"`)
-		})
-		.then(execPromise(`git fetch ${remote}`))
-		.then(execPromise(`git checkout --track -b ghp-${remote} ${remote}/master`))
-		.then(execPromise(`git merge master --squash --allow-unrelated-histories -Xtheirs`))
-		.then(execPromise(`git reset HEAD CNAME`))
-		.then(execPromise(`git reset HEAD docs/CNAME`))
-		.then(execPromise(`git commit -m 'Github Pipeline deploy'`))
-		.then(execPromise(`git push ${remote} +ghp-${remote}:master`))
-		.then(execPromise(`git checkout master`))
-		.then(execPromise(`git branch -D ghp-${remote}`))
-		.then(console.log)
+		.then(obj => execPromiseSilent(`git remote add ghp-${remote} "${obj.pipeline[remote]}"`))
+		.then(() => execPromise(`git fetch ${remote}`))
+		.then(() => execPromise(`git checkout --track -b ghp-${remote} ${remote}/master`))
+		.then(() => execPromise(`git merge master --squash --allow-unrelated-histories -Xtheirs`))
+		.then(() => execPromise(`git reset HEAD CNAME`))
+		.then(() => execPromise(`git reset HEAD docs/CNAME`))
+		.then(() => execPromise(`git commit -m 'Github Pipeline deploy'`))
+		.then(() => execPromise(`git push ${remote} +ghp-${remote}:master`))
+		.then(() => execPromise(`git checkout master`))
+		.then(() => execPromise(`git branch -D ghp-${remote}`))
 		.catch(console.error)
 }
 
@@ -76,6 +73,13 @@ function execPromise(str){
 		exec(str, (err, stdout, stderr) => {
 			if(err) return reject(err)
 			if(stderr) return reject(stderr)
+			resolve(stdout)
+		})
+	})
+}
+function execPromiseSilent(str){
+	return new Promise((resolve, reject) => {
+		exec(str, (err, stdout, stderr) => {
 			resolve(stdout)
 		})
 	})
