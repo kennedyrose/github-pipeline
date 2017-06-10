@@ -45,16 +45,20 @@ exports.list = exports.ls = () => {
 
 // Pushes latest commit to remote
 exports.push = input => {
-	let remote
+	let remote = input[1]
 	getPackage()
 		.then(obj => {
-			remote = obj.pipeline[input[1]]
-			return execPromise('git rev-parse HEAD')
+			return execPromise(`git remote add ${remote} "${obj.pipeline[remoteName]}"`)
 		})
-		.then(commitId => {
-			commitId = commitId.trim()
-			return execPromise(`git push ${remote} ${commitId}:refs/heads/master --force`)
-		})
+		.then(execPromise(`git fetch ${remote}`))
+		.then(execPromise(`git checkout --track -b ghp-${remote} ${remote}/master`))
+		.then(execPromise(`git merge master --squash --allow-unrelated-histories -Xtheirs`))
+		.then(execPromise(`git reset HEAD CNAME`))
+		.then(execPromise(`git reset HEAD docs/CNAME`))
+		.then(execPromise(`git commit -m 'Github Pipeline deploy'`))
+		.then(execPromise(`git push ${remote} +ghp-${remote}:master`))
+		.then(execPromise(`git checkout master`))
+		.then(execPromise(`git branch -D ghp-${remote}`))
 		.then(console.log)
 		.catch(console.error)
 }
