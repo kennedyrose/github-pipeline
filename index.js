@@ -73,6 +73,7 @@ function execPromise(str){
 		exec(str, (err, stdout, stderr) => {
 			if(err) return reject(err)
 			if(stderr) return reject(stderr)
+			if(stdout) console.log(stdout)
 			resolve(stdout)
 		})
 	})
