@@ -72,6 +72,7 @@ function execPromise(str){
 	return new Promise((resolve, reject) => {
 		console.log('Executing: ' + str)
 		exec(str, (err, stdout, stderr) => {
+			console.log('Returned...')
 			if(err) return reject(err)
 			if(stderr) return reject(stderr)
 			if(stdout) console.log(stdout)
@@ -81,7 +82,9 @@ function execPromise(str){
 }
 function execPromiseSilent(str){
 	return new Promise((resolve, reject) => {
+		console.log('Executing: ' + str)
 		exec(str, (err, stdout, stderr) => {
+			console.log('Returned...')
 			resolve(stdout)
 		})
 	})
