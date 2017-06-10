@@ -70,6 +70,7 @@ exports.rollback = () => {
 
 function execPromise(str){
 	return new Promise((resolve, reject) => {
+		console.log('Executing: ' + str)
 		exec(str, (err, stdout, stderr) => {
 			if(err) return reject(err)
 			if(stderr) return reject(stderr)
