@@ -6,7 +6,6 @@ const fs = require('fs-extra')
 exports.add = (input, opt) => {
 	getPackage()
 		.then(obj => {
-			if(!obj.pipeline) obj.pipeline = {}
 			obj.pipeline[input[1]] = input[2]
 			return obj
 		})
@@ -18,10 +17,8 @@ exports.add = (input, opt) => {
 exports.remove = exports.rm = (input, opt) => {
 	getPackage()
 		.then(obj => {
-			if(obj.pipeline){
-				for(let i = 1; (i - 1) <= input.length; i++){
-					delete obj.pipeline[input[i]]
-				}
+			for(let i = 1; (i - 1) <= input.length; i++){
+				delete obj.pipeline[input[i]]
 			}
 			if(!Object.keys(obj.pipeline).length) delete obj.pipeline
 			return obj
@@ -34,16 +31,14 @@ exports.remove = exports.rm = (input, opt) => {
 exports.list = exports.ls = () => {
 	getPackage()
 		.then(obj => {
-			if(obj.pipeline){
-				const arr = []
-				for(let i in obj.pipeline){
-					arr.push(`${i}: ${obj.pipeline[i]}`)
-				}
-				return arr.join('\n')
+			const arr = []
+			for(let i in obj.pipeline){
+				arr.push(`${i}: ${obj.pipeline[i]}`)
 			}
+			return arr.join('\n')
 		})
-		.then(list => {
-			if(list) console.log(list)
+		.then(str => {
+			if(str) console.log(str)
 		})
 		.catch(console.error)
 }
@@ -57,7 +52,13 @@ exports.rollback = () => {
 }
 
 function getPackage(){
-	return fs.readJson('./package.json')
+	return new Promise((resolve, reject) => {
+		fs.readJson('./package.json', (err, obj) => {
+			if(!obj) obj = {}
+			if(!obj.pipeline) obj.pipeline = {}
+			resolve(obj)
+		})
+	})
 }
 function savePackage(obj){
 	return fs.outputJson('./package.json', obj, {
