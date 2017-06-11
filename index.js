@@ -45,7 +45,7 @@ exports.list = exports.ls = () => {
 		.catch(console.error)
 }
 
-// Pushes latest commit to remote
+// Pushes latest master commit to remote
 exports.push = input => {
 	let remote = input[1]
 	getPackage()
@@ -55,23 +55,31 @@ exports.push = input => {
 		.then(() => execPromiseSilent(`git merge master --squash --allow-unrelated-histories -Xtheirs`))
 		.then(() => execPromiseSilent(`git reset HEAD CNAME`))
 		.then(() => execPromiseSilent(`git reset HEAD docs/CNAME`))
-		.then(() => execPromiseSilent(`git commit -m 'Github Pipeline deploy'`))
+		.then(() => execPromiseSilent(`git commit -m 'Github Pipeline deploy ${new Date().getTime()}'`))
 		.then(() => execPromiseSilent(`git push ghp-remote-${remote} +ghp-branch-${remote}:master`))
 		.then(() => execPromiseSilent(`git checkout master`))
 		.then(() => execPromiseSilent(`git branch -D ghp-branch-${remote}`))
-		.catch(err => {
-			console.log('ERROR: ' + err)
-		})
+		.catch(err => console.log('ERROR: ' + err))
 }
 
-// Rolls back remote to previous commit
-exports.rollback = () => {
+// Revert to old SHA
+exports.rollback = exports.revert = input => {
+	let remote = input[1]
+	let sha = input[2]
 	getPackage()
-		.then(obj => {
+		.then(obj => execPromiseSilent(`git remote add ghp-remote-${remote} "${obj.pipeline[remote]}"`))
+		.then(() => execPromiseSilent(`git fetch ghp-remote-${remote}`))
+		.then(() => execPromiseSilent(`git checkout --track -b ghp-branch-${remote} ghp-remote-${remote}/master`))
+		.then(() => execPromiseSilent(`git revert ${sha} --no-commit`))
+		.then(() => execPromiseSilent(`git commit -m 'Github Pipeline deploy ${new Date().getTime()}'`))
+		.then(() => execPromiseSilent(`git push ghp-remote-${remote} +ghp-branch-${remote}:master`))
+		.then(() => execPromiseSilent(`git checkout master`))
+		.then(() => execPromiseSilent(`git branch -D ghp-branch-${remote}`))
+		.catch(err => console.log('ERROR: ' + err))
 
-		})
 }
 
+/*
 function execPromise(str){
 	return new Promise((resolve, reject) => {
 		console.log('Executing: ' + str)
@@ -84,11 +92,14 @@ function execPromise(str){
 		})
 	})
 }
+*/
+
 function execPromiseSilent(str){
 	return new Promise((resolve, reject) => {
 		console.log('Executing: ' + str)
 		exec(str, (err, stdout, stderr) => {
-			console.log('Returned...')
+			if(stderr) console.log(stderr)
+			if(stdout) console.log(stdout)
 			resolve(stdout)
 		})
 	})
